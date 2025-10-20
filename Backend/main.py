@@ -1,7 +1,7 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import Session
 import uvicorn
 from dotenv import load_dotenv
@@ -17,16 +17,20 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 try:
+    logger.info("Importing database and models...")
     from database import SessionLocal, engine
     import models
-    from routes import inventory, recipes, tasks, chat, data, actions, ocr, web_recipes, ai_assistant
     
-    # Create database tables
+    logger.info("Importing routes...")
+    from routes import inventory, recipes, tasks, data, actions, ocr, web_recipes, ai_assistant
+    
     logger.info("Creating database tables...")
     models.Base.metadata.create_all(bind=engine)
     logger.info("✅ Database tables created successfully")
 except Exception as e:
-    logger.error(f"❌ Database initialization error: {str(e)}", exc_info=True)
+    logger.error(f"❌ Initialization error: {str(e)}", exc_info=True)
+    import traceback
+    traceback.print_exc()
     raise
 
 app = FastAPI(
@@ -71,19 +75,30 @@ def get_db():
         db.close()
 
 # Include routers
+logger.info("Registering API routes...")
 app.include_router(inventory.router, prefix="/api", tags=["inventory"])
 app.include_router(recipes.router, prefix="/api", tags=["recipes"]) 
 app.include_router(tasks.router, prefix="/api", tags=["tasks"])
-app.include_router(chat.router, prefix="/api", tags=["chat"])
 app.include_router(data.router, prefix="/api", tags=["data"])
 app.include_router(actions.router, prefix="/api", tags=["actions"])
 app.include_router(ocr.router, prefix="/api", tags=["ocr"])
 app.include_router(web_recipes.router, prefix="/api/web-recipes", tags=["web-recipes"])
 app.include_router(ai_assistant.router, prefix="/api/ai-assistant", tags=["ai-assistant"])
+logger.info("✅ All routes registered")
+
+# Global exception handler
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Global exception handler caught: {str(exc)}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"error": "Internal server error", "detail": str(exc)}
+    )
 
 # Health check endpoint (must be before static files)
 @app.get("/health")
 async def health_check():
+    logger.debug("Health check called")
     return {"status": "healthy", "service": "ChefCode Backend"}
 
 # Check if frontend directory exists (for production deployment)
