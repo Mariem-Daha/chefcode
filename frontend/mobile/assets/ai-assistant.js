@@ -5,8 +5,9 @@
 
 const AI_ASSISTANT = (() => {
     // Configuration
-    const API_BASE = window.CHEFCODE_CONFIG?.API_BASE_URL || 'http://localhost:8000';
+    const API_BASE = window.CHEFCODE_CONFIG?.API_URL || 'http://localhost:8000';
     const API_KEY = window.CHEFCODE_CONFIG?.API_KEY || '';
+    console.log('🤖 AI Assistant initialized with API_BASE:', API_BASE);
     
     // State
     let conversationContext = {};
@@ -176,6 +177,7 @@ const AI_ASSISTANT = (() => {
             // Show typing indicator
             const typingId = addTypingIndicator();
             
+            console.log('🔗 API Call: ai-assistant/command →', `${API_BASE}/api/ai-assistant/command`);
             const response = await fetch(`${API_BASE}/api/ai-assistant/command`, {
                 method: 'POST',
                 headers: {
