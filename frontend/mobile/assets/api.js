@@ -46,6 +46,7 @@ class ChefCodeAPI {
   // ===== SYNC DATA =====
   async syncData(data) {
     try {
+      console.log('🔗 API Call: syncData →', `${this.baseURL}/api/sync-data`);
       const response = await fetch(`${this.baseURL}/api/sync-data`, {
         method: 'POST',
         headers: this.getHeaders(),
@@ -71,6 +72,7 @@ class ChefCodeAPI {
   // ===== CHATGPT AI =====
   async sendChatMessage(prompt, language = 'en') {
     try {
+      console.log('🔗 API Call: sendChatMessage →', `${this.baseURL}/api/chatgpt-smart`);
       const response = await fetch(`${this.baseURL}/api/chatgpt-smart`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }, // Chat endpoint doesn't require auth for now
