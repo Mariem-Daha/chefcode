@@ -193,6 +193,7 @@
             if (emptyState) emptyState.style.display = 'none';
 
             // Call backend to search recipes
+            console.log('🔗 API Call: search_recipes →', `${API_BASE}/api/web-recipes/search_recipes`);
             const response = await fetch(`${API_BASE}/api/web-recipes/search_recipes`, {
                 method: 'POST',
                 headers: {
