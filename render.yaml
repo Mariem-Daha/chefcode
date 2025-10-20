@@ -18,6 +18,8 @@ services:
         fromDatabase:
           name: chefcode-db
           property: connectionString
+      - key: API_KEY
+        value: chefcode-secret-key-2024
       - key: OPENAI_API_KEY
         sync: false
       - key: ENVIRONMENT
