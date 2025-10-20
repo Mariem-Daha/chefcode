@@ -11,18 +11,43 @@ from pathlib import Path
 # Load environment variables from .env file
 load_dotenv()
 
-from database import SessionLocal, engine
-import models
-from routes import inventory, recipes, tasks, chat, data, actions, ocr, web_recipes, ai_assistant
+# Configure logging
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# Create database tables
-models.Base.metadata.create_all(bind=engine)
+try:
+    from database import SessionLocal, engine
+    import models
+    from routes import inventory, recipes, tasks, chat, data, actions, ocr, web_recipes, ai_assistant
+    
+    # Create database tables
+    logger.info("Creating database tables...")
+    models.Base.metadata.create_all(bind=engine)
+    logger.info("✅ Database tables created successfully")
+except Exception as e:
+    logger.error(f"❌ Database initialization error: {str(e)}", exc_info=True)
+    raise
 
 app = FastAPI(
     title="ChefCode Backend",
     description="FastAPI backend for ChefCode inventory management system",
     version="1.0.0"
 )
+
+# Startup event
+@app.on_event("startup")
+async def startup_event():
+    logger.info("🚀 ChefCode Backend is starting up...")
+    logger.info(f"📊 Environment: {os.getenv('ENVIRONMENT', 'development')}")
+    logger.info(f"🔌 Port: {os.getenv('PORT', '8000')}")
+    logger.info(f"💾 Database: {os.getenv('DATABASE_URL', 'sqlite:///./chefcode.db')[:50]}...")
+    logger.info("✅ Application startup complete")
+
+# Shutdown event
+@app.on_event("shutdown")
+async def shutdown_event():
+    logger.info("⚠️ ChefCode Backend is shutting down...")
 
 # CORS configuration to allow frontend connections
 # In production, replace with specific frontend URLs
@@ -94,6 +119,16 @@ else:
 
 if __name__ == "__main__":
     # Use reload=True only in development
-    # For production, use: uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
+    # For production, use: uvicorn main:app --host 0.0.0.0 --port $PORT
     is_dev = os.getenv("ENVIRONMENT", "development") == "development"
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=is_dev)
+    port = int(os.getenv("PORT", 8000))
+    
+    print(f"🚀 Starting ChefCode on port {port} (Environment: {os.getenv('ENVIRONMENT', 'development')})")
+    
+    uvicorn.run(
+        "main:app", 
+        host="0.0.0.0", 
+        port=port, 
+        reload=is_dev,
+        log_level="info"
+    )
