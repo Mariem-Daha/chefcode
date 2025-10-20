@@ -24,6 +24,17 @@ services:
         value: production
       - key: ALLOWED_ORIGINS
         value: "*"
+      # OCR Configuration (Google Cloud + Gemini)
+      - key: PROJECT_ID
+        sync: false
+      - key: LOCATION
+        sync: false
+      - key: PROCESSOR_ID
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        sync: false
     healthCheckPath: /health
 
 databases:
@@ -33,4 +44,3 @@ databases:
     user: chefcode
     plan: free
     region: oregon
-
